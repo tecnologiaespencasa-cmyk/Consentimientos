@@ -2,170 +2,115 @@
 <html>
 <head>
     <title>Consentimientos TuSalud</title>
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://apps.powerapps.com/play/powerapps.js"></script>
     <style>
-        body { 
-            margin: 0; 
-            padding: 0; 
-            font-family: Arial, sans-serif; 
-            background: #f5f5f5;
-            overflow: hidden;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f0f2f5; }
         
-        /* Pantalla de login */
-        .login-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: white;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            text-align: center;
+        .login-screen {
+            width: 100%; height: 100vh;
+            display: flex; justify-content: center; align-items: center;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
         }
         
         .login-box {
-            background: white;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            max-width: 400px;
-            width: 90%;
+            background: white; padding: 40px; border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 90%; max-width: 400px;
+            text-align: center;
         }
         
-        h2 {
-            color: #28a745;
-            margin-bottom: 10px;
+        .login-box h1 { color: #28a745; margin-bottom: 20px; }
+        .login-box input {
+            width: 100%; padding: 15px; margin: 15px 0;
+            border: 2px solid #ddd; border-radius: 8px; font-size: 16px;
         }
         
-        input {
-            width: 100%;
-            padding: 15px;
-            margin: 15px 0;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            box-sizing: border-box;
+        .login-box button {
+            background: #28a745; color: white; border: none;
+            padding: 15px; width: 100%; border-radius: 8px;
+            font-size: 18px; cursor: pointer; font-weight: bold;
         }
         
-        button {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 15px;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            width: 100%;
-            font-weight: bold;
+        .error { color: #dc3545; margin-top: 10px; display: none; }
+        
+        #powerapps-container {
+            width: 100vw; height: 100vh; position: fixed;
+            top: 0; left: 0; display: none;
         }
         
-        button:hover {
-            background: #218838;
-        }
-        
-        .error {
-            color: #dc3545;
-            margin-top: 10px;
-            display: none;
-        }
-        
-        /* Contenedor de la Power App */
-        #app-container {
-            width: 100%;
-            height: 100vh;
-            border: none;
-        }
-        
-        /* Ocultar barra de navegación cuando la app esté cargada */
-        .powerapps-container iframe {
-            border: none;
+        #powerapps-container iframe {
+            width: 100%; height: 100%; border: none;
         }
     </style>
 </head>
 <body>
 
-<!-- 1. PANTALLA DE LOGIN (aparece primero) -->
-<div id="loginOverlay" class="login-overlay">
+<div class="login-screen" id="loginScreen">
     <div class="login-box">
-        <h2>🔐 Consentimientos TuSalud</h2>
-        <p>Acceso para personal autorizado</p>
-        <input type="password" id="codigoAcceso" placeholder="Ingresa el código de acceso">
-        <button onclick="verificarCodigo()">INGRESAR A LA APLICACIÓN</button>
-        <p class="error" id="errorMsg">Código incorrecto. Intenta nuevamente.</p>
+        <h1>🔐 TuSalud Consentimientos</h1>
+        <p>Ingresa el código de acceso:</p>
+        <input type="password" id="passwordInput" placeholder="Código">
+        <button onclick="checkPassword()">INGRESAR</button>
+        <p class="error" id="errorText">Código incorrecto</p>
         <p style="margin-top: 20px; font-size: 12px; color: #666;">
-            📞 Soporte: 601-1234567
+            Usa: TUSALUD2024
         </p>
     </div>
 </div>
 
-<!-- 2. CONTENEDOR PARA LA POWER APP (oculto inicialmente) -->
-<div id="app-container" style="display: none;"></div>
+<div id="powerapps-container"></div>
 
 <script>
-// ================= CONFIGURACIÓN =================
-// 1. REEMPLAZA ESTO CON TU APP ID REAL:
-const APP_ID = "e6fea69f-80e5-4579-8f01-f087a031aee6"; 
-// Ejemplo: "12345678-1234-1234-1234-123456789012"
+// CONFIGURACIÓN - ¡IMPORTANTE!
+const CORRECT_PASSWORD = "TUSALUD2024";
+const POWERAPPS_APP_ID = "e6fea69f-80e5-4579-8f01-f087a031aee6"; // ¡REEMPLAZA!
 
-// 2. Código de acceso (cámbialo cuando quieras):
-const CODIGO_CORRECTO = "Espencasa";
-
-// ================= FUNCIONES =================
-function verificarCodigo() {
-    const codigoIngresado = document.getElementById('codigoAcceso').value;
-    const errorMsg = document.getElementById('errorMsg');
+function checkPassword() {
+    const input = document.getElementById('passwordInput');
+    const error = document.getElementById('errorText');
+    const password = input.value.trim();
     
-    if (codigoIngresado === CODIGO_CORRECTO) {
-        // ✅ CÓDIGO CORRECTO
-        errorMsg.style.display = 'none';
+    if (password.toUpperCase() === CORRECT_PASSWORD.toUpperCase()) {
+        // Ocultar login
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('powerapps-container').style.display = 'block';
         
-        // Ocultar pantalla de login
-        document.getElementById('loginOverlay').style.display = 'none';
-        
-        // Mostrar contenedor de la app
-        document.getElementById('app-container').style.display = 'block';
-        
-        // Cargar la Power App
-        cargarPowerApp();
+        // Cargar Power Apps
+        loadPowerApp();
     } else {
-        // ❌ CÓDIGO INCORRECTO
-        errorMsg.style.display = 'block';
-        document.getElementById('codigoAcceso').style.borderColor = '#dc3545';
+        error.style.display = 'block';
+        input.style.borderColor = '#dc3545';
     }
 }
 
-function cargarPowerApp() {
-    // Verificar que el App ID no sea el de ejemplo
-    if (APP_ID.includes("e6fea69f-80e5-4579-8f01-f087a031aee6") || APP_ID.length < 10) {
-        alert("❌ Error: No has configurado el App ID. Reemplaza 'TU_APP_ID_AQUÍ_PEGALO' por tu App ID real.");
+function loadPowerApp() {
+    // Verificar App ID
+    if (POWERAPPS_APP_ID.includes("TU_APP_ID_AQUÍ")) {
+        alert("Configura el App ID primero");
         return;
     }
     
-    // Cargar la Power App embebida
+    // Cargar la aplicación
     powerapps.embed({
-        appId: APP_ID,
+        appId: POWERAPPS_APP_ID,
         height: "100%",
         width: "100%",
-        hideNav: true,          // Oculta la barra de Power Apps
-        target: "#app-container"
+        hideNav: true,
+        target: "#powerapps-container"
     });
+    
+    console.log("Power App cargada con ID:", POWERAPPS_APP_ID);
 }
 
-// Permitir presionar ENTER para ingresar
-document.getElementById('codigoAcceso').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        verificarCodigo();
-    }
+// Evento para presionar Enter
+document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') checkPassword();
 });
 
-// Enfocar automáticamente el campo de código
-document.getElementById('codigoAcceso').focus();
+// Auto-enfocar
+document.getElementById('passwordInput').focus();
 </script>
 
 </body>
