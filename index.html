@@ -7,14 +7,13 @@
     <style>
         body { 
             margin: 0; 
+            padding: 0; 
             font-family: Arial, sans-serif; 
             background: #f5f5f5;
+            overflow: hidden;
         }
-        #app-container {
-            width: 100%;
-            height: 100vh;
-            border: none;
-        }
+        
+        /* Pantalla de login */
         .login-overlay {
             position: fixed;
             top: 0;
@@ -27,90 +26,146 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
+            text-align: center;
         }
+        
         .login-box {
             background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-            text-align: center;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
             max-width: 400px;
             width: 90%;
         }
+        
+        h2 {
+            color: #28a745;
+            margin-bottom: 10px;
+        }
+        
         input {
             width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
             font-size: 16px;
+            box-sizing: border-box;
         }
+        
         button {
             background: #28a745;
             color: white;
             border: none;
-            padding: 12px 30px;
-            border-radius: 5px;
+            padding: 15px;
+            border-radius: 8px;
             font-size: 16px;
             cursor: pointer;
             width: 100%;
+            font-weight: bold;
+        }
+        
+        button:hover {
+            background: #218838;
+        }
+        
+        .error {
+            color: #dc3545;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        /* Contenedor de la Power App */
+        #app-container {
+            width: 100%;
+            height: 100vh;
+            border: none;
+        }
+        
+        /* Ocultar barra de navegación cuando la app esté cargada */
+        .powerapps-container iframe {
+            border: none;
         }
     </style>
 </head>
 <body>
 
-<!-- Pantalla de login (aparece primero) -->
+<!-- 1. PANTALLA DE LOGIN (aparece primero) -->
 <div id="loginOverlay" class="login-overlay">
     <div class="login-box">
-        <h2>🔐 Acceso Enfermeros</h2>
-        <p>Ingresa el código de acceso:</p>
-        <input type="password" id="codigoAcceso" placeholder="Ej: TUSALUD2024">
-        <button onclick="verificarCodigo()">INGRESAR</button>
-        <p id="errorMsg" style="color: red; margin-top: 10px; display: none;">Código incorrecto</p>
+        <h2>🔐 Consentimientos TuSalud</h2>
+        <p>Acceso para personal autorizado</p>
+        <input type="password" id="codigoAcceso" placeholder="Ingresa el código de acceso">
+        <button onclick="verificarCodigo()">INGRESAR A LA APLICACIÓN</button>
+        <p class="error" id="errorMsg">Código incorrecto. Intenta nuevamente.</p>
+        <p style="margin-top: 20px; font-size: 12px; color: #666;">
+            📞 Soporte: 601-1234567
+        </p>
     </div>
 </div>
 
-<!-- Aquí se cargará la Power App -->
-<div id="app-container"></div>
+<!-- 2. CONTENEDOR PARA LA POWER APP (oculto inicialmente) -->
+<div id="app-container" style="display: none;"></div>
 
 <script>
-// Código de acceso (cámbialo aquí cuando quieras)
+// ================= CONFIGURACIÓN =================
+// 1. REEMPLAZA ESTO CON TU APP ID REAL:
+const APP_ID = "e6fea69f-80e5-4579-8f01-f087a031aee6"; 
+// Ejemplo: "12345678-1234-1234-1234-123456789012"
+
+// 2. Código de acceso (cámbialo cuando quieras):
 const CODIGO_CORRECTO = "TUSALUD2024";
 
+// ================= FUNCIONES =================
 function verificarCodigo() {
-    const codigo = document.getElementById('codigoAcceso').value;
+    const codigoIngresado = document.getElementById('codigoAcceso').value;
     const errorMsg = document.getElementById('errorMsg');
     
-    if (codigo === CODIGO_CORRECTO) {
-        // Código correcto - ocultar login y cargar app
+    if (codigoIngresado === CODIGO_CORRECTO) {
+        // ✅ CÓDIGO CORRECTO
+        errorMsg.style.display = 'none';
+        
+        // Ocultar pantalla de login
         document.getElementById('loginOverlay').style.display = 'none';
+        
+        // Mostrar contenedor de la app
+        document.getElementById('app-container').style.display = 'block';
+        
+        // Cargar la Power App
         cargarPowerApp();
     } else {
-        // Código incorrecto
+        // ❌ CÓDIGO INCORRECTO
         errorMsg.style.display = 'block';
+        document.getElementById('codigoAcceso').style.borderColor = '#dc3545';
     }
 }
 
 function cargarPowerApp() {
-    // TU APP ID - Reemplázalo por el real
-    const appId = "e6fea69f-80e5-4579-8f01-f087a031aee6"; 
+    // Verificar que el App ID no sea el de ejemplo
+    if (APP_ID.includes("e6fea69f-80e5-4579-8f01-f087a031aee6") || APP_ID.length < 10) {
+        alert("❌ Error: No has configurado el App ID. Reemplaza 'TU_APP_ID_AQUÍ_PEGALO' por tu App ID real.");
+        return;
+    }
     
-    // Configurar y cargar la Power App
+    // Cargar la Power App embebida
     powerapps.embed({
-        appId: appId,
+        appId: APP_ID,
         height: "100%",
         width: "100%",
-        hideNav: true,
+        hideNav: true,          // Oculta la barra de Power Apps
         target: "#app-container"
     });
 }
 
-// Permitir entrar con ENTER
+// Permitir presionar ENTER para ingresar
 document.getElementById('codigoAcceso').addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
         verificarCodigo();
     }
 });
+
+// Enfocar automáticamente el campo de código
+document.getElementById('codigoAcceso').focus();
 </script>
 
 </body>
